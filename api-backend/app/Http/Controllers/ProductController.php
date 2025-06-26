@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Products;
 use Illuminate\Http\Request;
+use Storage;
 
 class ProductController extends Controller
 {
@@ -51,24 +52,55 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Products $products)
     {
         //
+
+        return response()->json([
+            "status" =>true,
+            "message"=>"Product Data Found",
+            "product" =>$products,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Products $products)
     {
         //
+
+        $data = $request->validate([
+            "title"=>"required",
+        ]);
+
+        if($request->hasFile("banner_img")){
+            if($products->banner_img){
+                Storage::disk("public")->delete($products->banner_img);
+            }
+            $data ["banner_img"] = $request->file("banner_img")->store("products","public");
+        }
+
+        $products->update($data);
+
+        return response()->json([
+            "status" =>true,
+            "message"=>"Product data updated",
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Products $products)
     {
         //
+
+        $products->delete();
+
+        return response()->json([
+            "status" =>true,
+            "message"=>"Product deleted Successfully",
+        ]);
     }
 }
